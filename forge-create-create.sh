@@ -69,7 +69,7 @@ do
     continue
   fi
 
-  # Extract RPC URL if needed
+  # Extract RPC URL if needed but still pass it to forge
   if [[ ${arg} == --rpc-url=* ]]
   then
     RPC_URL="${arg#*=}"
@@ -77,6 +77,7 @@ do
   then
     i=$((i + 1))
     RPC_URL="${!i}"
+    i=$((i-1))  # Go back since we'll handle this in the special case below
   fi
 
   # Extract contract path from argument containing .sol:
@@ -109,6 +110,11 @@ do
       CONSTRUCTOR_ARGS+=("${next_arg}")
       FORGE_ARGS+=("${next_arg}")
     done
+  # Special handling for --rpc-url to ensure it and its value are captured
+  elif [ "$arg" == "--rpc-url" ] && [ $i -lt $# ]; then
+    FORGE_ARGS+=("$arg")
+    i=$((i+1))
+    FORGE_ARGS+=("${!i}")
   else
     # Add regular arguments to forge args
     FORGE_ARGS+=("${arg}")
