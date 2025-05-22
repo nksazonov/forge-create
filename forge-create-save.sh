@@ -185,15 +185,15 @@ fi
 COMMIT="${VALIDATED_COMMIT}"
 
 # Prepare RPC URL argument for cast commands
-RPC_ARG=""
+RPC_ARG=()
 if [[ -n "${RPC_URL}" ]]
 then
-  RPC_ARG="--rpc-url ${RPC_URL}"
+  RPC_ARG=(--rpc-url "${RPC_URL}")
 fi
 
 # Get transaction data
 echo "Fetching transaction data for ${TX_HASH}..."
-if ! TX_DATA=$(cast tx "${TX_HASH}" --json "${RPC_ARG}" 2>/dev/null)
+if ! TX_DATA=$(cast tx "${TX_HASH}" --json "${RPC_ARG[@]}" 2>/dev/null)
 then
   echo "Error: Failed to fetch transaction data. Make sure the transaction hash is valid and the RPC URL is correct."
   exit 1
@@ -206,7 +206,7 @@ NONCE=$(echo "${TX_DATA}" | jq -r '.nonce')
 
 # Get block timestamp
 echo "Fetching block data for block ${BLOCK_NUMBER}..."
-if ! BLOCK_DATA=$(cast block "${BLOCK_NUMBER}" --json "${RPC_ARG}" 2>/dev/null)
+if ! BLOCK_DATA=$(cast block "${BLOCK_NUMBER}" --json "${RPC_ARG[@]}" 2>/dev/null)
 then
   echo "Error: Failed to fetch block data."
   exit 1
@@ -220,7 +220,7 @@ echo "Calculating deployed contract address..."
 # Convert nonce to decimal if it's hex
 NONCE_DEC=$(cast to-dec "${NONCE}" 2>/dev/null)
 # Extract just the address (last word) from the output
-if ! CA_RESULT=$(cast ca "${DEPLOYER}" --nonce "${NONCE_DEC}" "${RPC_ARG}" 2>/dev/null)
+if ! CA_RESULT=$(cast ca "${DEPLOYER}" --nonce "${NONCE_DEC}" "${RPC_ARG[@]}" 2>/dev/null)
 then
   echo "Error: Failed to calculate contract address."
   exit 1
@@ -242,7 +242,7 @@ RAW_FILE_NAME=$(date -u -r "${TIMESTAMP_DEC}" "+%Y-%m-%dT%H:%M:%S")
 CHAIN_ID=31337
 if [[ -n "${RPC_URL}" ]]
 then
-  if CHAIN_ID_HEX=$(cast chain-id "${RPC_ARG}" 2>/dev/null)
+  if CHAIN_ID_HEX=$(cast chain-id "${RPC_ARG[@]}" 2>/dev/null)
   then
     CHAIN_ID=$(cast to-dec "${CHAIN_ID_HEX}" 2>/dev/null || echo "31337")
   fi
