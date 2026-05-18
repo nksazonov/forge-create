@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Version constant
-VERSION="v0.1.2"
+VERSION="v0.2.0"
 
 # Function to display usage information
 display_usage() {
@@ -25,9 +25,9 @@ display_usage() {
   echo "  Required arguments:"
   echo "    TX_HASH               Transaction hash of the deployment"
   echo "    --commit HASH         Commit hash of the source code (must exist in repo)"
-  echo "    --contract-path PATH   Path to the contract source (format: path/to/Contract.sol:ContractName)"
+  echo "    --contract-path PATH  Path to the contract source (format: path/to/Contract.sol:ContractName)"
   echo "  Options:"
-  echo "    --constructor-args ARGS   Constructor arguments (as a string)"
+  echo "    --constructor-args ARGS  Constructor arguments (as a string)"
   echo "    --comment TEXT           Comment for the deployment"
   echo "    --rpc-url URL            RPC URL to use (for fetching tx data)"
   echo "    --save-out PATH          Directory to save deployment info (default: ./deployments)"
