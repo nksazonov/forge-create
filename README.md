@@ -36,15 +36,16 @@ brew install forge-create
 Use `forge-create` as a drop-in replacement for `forge create`:
 
 ```bash
-forge-create src/MyContract.sol:MyContract --rpc-url <your-rpc-url> --private-key <your-private-key>
+forge-create src/MyContract.sol_MyContract --rpc-url <your-rpc-url> --private-key <your-private-key>
 ```
 
 Additional options specific to `forge-create`:
 
 ```txt
---no-save          Don't save output to JSON file
---save-out PATH    Path where to save the JSON files (default: ./deployments)
---comment "TEXT"   Add a comment to the stored JSON file
+--no-save            Don't save output to JSON file
+--save-out PATH      Path where to save the JSON files (default: ./deployments)
+--comment "TEXT"     Add a comment to the stored JSON file
+--file-prefix "TEXT" Prefix to prepend to the deployment file name
 ```
 
 Example with all options:
@@ -84,6 +85,7 @@ Optional arguments:
 - `--comment TEXT` - Comment for the deployment
 - `--rpc-url URL` - RPC URL to use (for fetching tx data)
 - `--save-out PATH` - Directory to save deployment info (default: ./deployments)
+- `--file-prefix TEXT` - Prefix to prepend to the deployment file name
 
 ## File Structure
 
@@ -92,16 +94,18 @@ Deployment files are organized by chain ID and contract name:
 ```bash
 deployments/
 ├── 1/                        # Ethereum Mainnet (Chain ID: 1)
-│   └── MyContract.sol:MyContract/
-│       └── 2025-05-21T12:00:00.json
+│   └── MyContract.sol_MyContract/
+│       └── 2025-05-21T12-00-00.json
 ├── 5/                        # Goerli Testnet (Chain ID: 5)
-│   └── MyContract.sol:MyContract/
-│       ├── 2025-05-22T15:30:42.json
-│       └── 2025-05-22T15:30:42-1.json  # Counter added for same-second deploys
+│   └── MyContract.sol_MyContract/
+│       ├── 2025-05-22T15-30-42.json
+│       └── 2025-05-22T15-30-42-1.json  # Counter added for same-second deploys
 └── 31337/                    # Local Anvil Chain (Chain ID: 31337)
-    └── MyContract.sol:MyContract/
-        └── 2025-05-23T10:15:00.json
+    └── MyContract.sol_MyContract/
+        └── 2025-05-23T10-15-00.json
 ```
+
+Using `--file-prefix v1` produces files like `v1-2025-05-21T12-00-00.json`.
 
 ## JSON File Format
 

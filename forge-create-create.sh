@@ -8,6 +8,7 @@ then
   echo "  --no-save          Don't save output to JSON file"
   echo "  --save-out PATH    Path where to save the chain and contract directories with the JSON file (default: ./deployments)"
   echo "  --comment TEXT     Add a comment to the stored JSON file"
+  echo "  --file-prefix TEXT Prefix to prepend to the deployment file name"
   exit 1
 fi
 
@@ -21,6 +22,7 @@ FILE_CONTRACT_NAME=""
 NO_SAVE=false
 SAVE_OUT="./deployments"
 COMMENT=""
+FILE_PREFIX=""
 
 # First pass: identify script-specific flags and check if --json is already present
 i=0
@@ -41,6 +43,10 @@ do
   then
     i=$((i + 1))
     COMMENT="${!i}"
+  elif [[ "${arg}" == "--file-prefix" ]] && [[ "${i}" -lt $# ]]
+  then
+    i=$((i + 1))
+    FILE_PREFIX="${!i}"
   # Check for --json flag
   elif [[ "${arg}" == "--json" ]]
   then
@@ -67,6 +73,10 @@ do
   then
     i=$((i + 1))
     continue
+  elif [[ "${arg}" == "--file-prefix" ]] && [[ "${i}" -lt $# ]]
+  then
+    i=$((i + 1))
+    continue
   fi
 
   # Extract RPC URL if needed but still pass it to forge
@@ -81,7 +91,7 @@ do
   fi
 
   # Extract contract path from argument containing .sol:
-  if [[ "${arg}" == *".sol:"* ]]
+  if [[ "${arg}" == *".sol_"* ]]
   then
     CONTRACT_PATH="${arg}"
     # Extract the fileContractName (just the filename.sol:ContractName part without the path)
@@ -159,7 +169,7 @@ COMMIT=$(git rev-parse HEAD)
 TIMESTAMP=$(date +%s)
 
 # Convert timestamp to ISO8601 format (without ms) for filename
-RAW_FILE_NAME=$(date -u -r "${TIMESTAMP}" "+%Y-%m-%dT%H:%M:%S")
+RAW_FILE_NAME=$(date -u -r "${TIMESTAMP}" "+%Y-%m-%dT%H-%M-%S")
 
 # Determine the chainId
 if [[ -n "${RPC_URL}" ]]
@@ -211,9 +221,15 @@ FINAL_DIR="${SAVE_OUT%/}/${CHAIN_ID}/${FILE_CONTRACT_NAME}"
 mkdir -p "${FINAL_DIR}"
 
 # Determine the filename according to the algorithm
-# 1. Calculate rawFileName
-FILE_NAME="${RAW_FILE_NAME}.json"
-FILE_BASE="${FINAL_DIR}/${RAW_FILE_NAME}"
+# 1. Calculate rawFileName (with optional prefix)
+if [[ -n "${FILE_PREFIX}" ]]
+then
+  PREFIXED_FILE_NAME="${FILE_PREFIX}-${RAW_FILE_NAME}"
+else
+  PREFIXED_FILE_NAME="${RAW_FILE_NAME}"
+fi
+FILE_NAME="${PREFIXED_FILE_NAME}.json"
+FILE_BASE="${FINAL_DIR}/${PREFIXED_FILE_NAME}"
 FILE_PATH="${FILE_BASE}.json"
 
 # 2. Check if such file already exists
@@ -247,7 +263,7 @@ then
   NEW_COUNTER=$((HIGHEST_COUNTER + 1))
 
   # 5. Generate new filename with counter
-  FILE_NAME="${RAW_FILE_NAME}-${NEW_COUNTER}.json"
+  FILE_NAME="${PREFIXED_FILE_NAME}-${NEW_COUNTER}.json"
 fi
 
 SAVE_PATH="${FINAL_DIR}/${FILE_NAME}"

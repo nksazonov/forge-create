@@ -13,6 +13,7 @@ usage() {
   echo "  --comment TEXT           Comment for the deployment"
   echo "  --rpc-url URL            RPC URL to use (for fetching tx data)"
   echo "  --save-out PATH          Directory to save deployment info (default: ./deployments)"
+  echo "  --file-prefix TEXT       Prefix to prepend to the deployment file name"
   exit 1
 }
 
@@ -61,6 +62,7 @@ CONSTRUCTOR_ARGS=""
 COMMENT=""
 RPC_URL=""
 SAVE_OUT="./deployments"
+FILE_PREFIX=""
 
 # Parse arguments
 if [[ $# -lt 1 ]] || [[ "$1" != "save" ]]
@@ -149,6 +151,15 @@ do
         exit 1
       fi
       SAVE_OUT="$2"
+      shift 2
+      ;;
+    --file-prefix)
+      if [[ -z "$2" ]] || [[ "$2" == --* ]]
+      then
+        echo "Error: --file-prefix requires a value."
+        exit 1
+      fi
+      FILE_PREFIX="$2"
       shift 2
       ;;
     *)
@@ -295,9 +306,15 @@ FINAL_DIR="${SAVE_OUT%/}/${CHAIN_ID}/${FILE_CONTRACT_NAME}"
 mkdir -p "${FINAL_DIR}"
 
 # Determine the filename according to the algorithm
-# 1. Calculate rawFileName
-FILE_NAME="${RAW_FILE_NAME}.json"
-FILE_BASE="${FINAL_DIR}/${RAW_FILE_NAME}"
+# 1. Calculate rawFileName (with optional prefix)
+if [[ -n "${FILE_PREFIX}" ]]
+then
+  PREFIXED_FILE_NAME="${FILE_PREFIX}-${RAW_FILE_NAME}"
+else
+  PREFIXED_FILE_NAME="${RAW_FILE_NAME}"
+fi
+FILE_NAME="${PREFIXED_FILE_NAME}.json"
+FILE_BASE="${FINAL_DIR}/${PREFIXED_FILE_NAME}"
 FILE_PATH="${FILE_BASE}.json"
 
 # 2. Check if such file already exists
@@ -331,7 +348,7 @@ then
   NEW_COUNTER=$((HIGHEST_COUNTER + 1))
 
   # 5. Generate new filename with counter
-  FILE_NAME="${RAW_FILE_NAME}-${NEW_COUNTER}.json"
+  FILE_NAME="${PREFIXED_FILE_NAME}-${NEW_COUNTER}.json"
 fi
 
 # Create the full save path
