@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Version constant
-VERSION="v0.1.2"
+VERSION="v0.2.0"
 
 # Function to display usage information
 display_usage() {
@@ -18,18 +18,20 @@ display_usage() {
   echo "    --no-save          Don't save output to JSON file"
   echo "    --save-out PATH    Path where to save JSON files (default: ./deployments)"
   echo "    --comment TEXT     Add a comment to the stored JSON file"
+  echo "    --file-prefix TEXT Prefix to prepend to the deployment file name"
   echo ""
   echo "For 'save' command options:"
   echo "  forge-create.sh save TX_HASH --commit COMMIT_HASH --contract-path CONTRACT_PATH [options]"
   echo "  Required arguments:"
   echo "    TX_HASH               Transaction hash of the deployment"
   echo "    --commit HASH         Commit hash of the source code (must exist in repo)"
-  echo "    --contract-path PATH   Path to the contract source (format: path/to/Contract.sol:ContractName)"
+  echo "    --contract-path PATH  Path to the contract source (format: path/to/Contract.sol:ContractName)"
   echo "  Options:"
-  echo "    --constructor-args ARGS   Constructor arguments (as a string)"
+  echo "    --constructor-args ARGS  Constructor arguments (as a string)"
   echo "    --comment TEXT           Comment for the deployment"
   echo "    --rpc-url URL            RPC URL to use (for fetching tx data)"
   echo "    --save-out PATH          Directory to save deployment info (default: ./deployments)"
+  echo "    --file-prefix TEXT       Prefix to prepend to the deployment file name"
   exit 1
 }
 

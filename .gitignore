@@ -1,0 +1,9 @@
+# Foundry build artifacts (from test/ project)
+test/out/
+test/cache/
+
+# Release archives
+*.tar.gz
+
+# Deployment output (uncomment to track deployments in version control)
+# deployments/
