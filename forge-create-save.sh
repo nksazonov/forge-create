@@ -324,7 +324,7 @@ then
   HIGHEST_COUNTER=0
 
   # Use ls with a pattern and grep to extract all counters
-  for file in "${FILE_BASE}"-*.json "${FILE_BASE}".json
+  for file in "${FILE_BASE}"-*.json
   do
     if [[ -f "${file}" ]]
     then

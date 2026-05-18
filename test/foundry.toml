@@ -1,0 +1,4 @@
+[profile.default]
+src = "fixtures"
+out = "out"
+libs = []

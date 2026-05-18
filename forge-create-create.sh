@@ -91,11 +91,11 @@ do
   fi
 
   # Extract contract path from argument containing .sol:
-  if [[ "${arg}" == *".sol_"* ]]
+  if [[ "${arg}" == *".sol:"* ]]
   then
     CONTRACT_PATH="${arg}"
-    # Extract the fileContractName (just the filename.sol:ContractName part without the path)
-    FILE_CONTRACT_NAME=$(basename "${CONTRACT_PATH}")
+    # Use _ instead of : for filesystem compatibility
+    FILE_CONTRACT_NAME=$(basename "${CONTRACT_PATH}" | tr ':' '_')
   fi
 
   # Handle constructor arguments special case
@@ -199,15 +199,42 @@ then
   CONSTRUCTOR_ARGS_JSON="${CONSTRUCTOR_ARGS_JSON}]"
 fi
 
-# Add the additional fields to the output JSON
-FINAL_OUTPUT=$(echo "${OUTPUT}" | jq \
+# Extract deployment info — handle Foundry <0.3 (flat fields) and ≥0.3 (nested transaction)
+DEPLOYER=$(echo "${OUTPUT}" | jq -r '.deployer // .transaction.from // empty')
+TX_HASH=$(echo "${OUTPUT}" | jq -r '.transactionHash // empty')
+DEPLOYED_TO=$(echo "${OUTPUT}" | jq -r '.deployedTo // empty')
+
+# Foundry ≥0.3: deployedTo and transactionHash are absent from JSON output.
+# Derive deployedTo from deployer+nonce; fetch transactionHash from the latest block.
+if [[ -z "${DEPLOYED_TO}" ]] && [[ -n "${DEPLOYER}" ]]
+then
+  NONCE=$(echo "${OUTPUT}" | jq -r '.transaction.nonce // "0x0"')
+  NONCE_DEC=$(cast to-dec "${NONCE}" 2>/dev/null || echo "0")
+  if [[ -n "${RPC_URL}" ]]
+  then
+    CA_RESULT=$(cast ca "${DEPLOYER}" --nonce "${NONCE_DEC}" --rpc-url "${RPC_URL}" 2>/dev/null)
+    DEPLOYED_TO=$(echo "${CA_RESULT}" | awk '{print $NF}')
+    TX_HASH=$(cast block latest --rpc-url "${RPC_URL}" --json 2>/dev/null | jq -r '.transactions[-1] // empty')
+  else
+    CA_RESULT=$(cast ca "${DEPLOYER}" --nonce "${NONCE_DEC}" 2>/dev/null)
+    DEPLOYED_TO=$(echo "${CA_RESULT}" | awk '{print $NF}')
+  fi
+fi
+
+FINAL_OUTPUT=$(jq -n \
+  --arg deployer "${DEPLOYER}" \
+  --arg deployedTo "${DEPLOYED_TO}" \
+  --arg txHash "${TX_HASH}" \
   --arg commit "${COMMIT}" \
   --arg timestamp "${TIMESTAMP}" \
   --arg chainId "${CHAIN_ID}" \
   --arg contractPath "${CONTRACT_PATH}" \
   --arg comment "${COMMENT}" \
   --argjson constructorArgs "${CONSTRUCTOR_ARGS_JSON}" \
-  '. + {
+  '{
+    deployer: $deployer,
+    deployedTo: $deployedTo,
+    transactionHash: $txHash,
     commit: $commit,
     timestamp: $timestamp | tonumber,
     chainId: $chainId | tonumber,
@@ -239,7 +266,7 @@ then
   HIGHEST_COUNTER=0
 
   # Use ls with a pattern and grep to extract all counters
-  for file in "${FILE_BASE}"-*.json "${FILE_BASE}".json
+  for file in "${FILE_BASE}"-*.json
   do
     if [[ -f "${file}" ]]
     then

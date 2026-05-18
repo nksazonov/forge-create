@@ -130,6 +130,24 @@ Each deployment is saved as a JSON file with the following structure:
 - [Foundry](https://github.com/foundry-rs/foundry) - For `forge` and `cast` commands
 - [jq](https://stedolan.github.io/jq/) - For JSON processing
 
+## Testing
+
+Tests use [BATS](https://github.com/bats-core/bats-core) (≥1.3) and deploy a real contract against a local Anvil instance.
+
+Install BATS:
+
+```bash
+brew install bats-core
+```
+
+Run the tests:
+
+```bash
+bats test/forge-create.bats
+```
+
+Anvil is started and stopped automatically by the test suite. Each test gets isolated chain state via `anvil_snapshot`/`anvil_revert`.
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.
