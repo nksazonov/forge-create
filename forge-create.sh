@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Version constant
-VERSION="v0.2.0"
+VERSION="v0.3.0"
 
 # Function to display usage information
 display_usage() {
@@ -10,6 +10,7 @@ display_usage() {
   echo "Commands:"
   echo "  <default>        Run forge create with deployment info saving capabilities"
   echo "  save             Save deployment info for an existing transaction"
+  echo "  save-script      Batch-save artifacts from a Foundry script run file"
   echo "  --version, -v    Show version information"
   echo ""
   echo "For 'create' command options:"
@@ -32,6 +33,15 @@ display_usage() {
   echo "    --rpc-url URL            RPC URL to use (for fetching tx data)"
   echo "    --save-out PATH          Directory to save deployment info (default: ./deployments)"
   echo "    --file-prefix TEXT       Prefix to prepend to the deployment file name"
+  echo ""
+  echo "For 'save-script' command options:"
+  echo "  forge-create.sh save-script <run-file> [options]"
+  echo "  Required arguments:"
+  echo "    <run-file>            Path to a Foundry script run artifact JSON file"
+  echo "  Options:"
+  echo "    --save-out PATH       Directory to save deployment artifacts (default: ./deployments)"
+  echo "    --file-prefix TEXT    Prefix to prepend to each deployment filename"
+  echo "    --comment TEXT        Comment added to every saved artifact"
   exit 1
 }
 
@@ -40,6 +50,7 @@ REALPATH_RESULT=$(realpath "$0")
 SCRIPT_DIR="$(dirname "${REALPATH_RESULT}")"
 CREATE_SCRIPT="${SCRIPT_DIR}/forge-create-create.sh"
 SAVE_SCRIPT="${SCRIPT_DIR}/forge-create-save.sh"
+SCRIPT_SCRIPT="${SCRIPT_DIR}/forge-create-script.sh"
 
 if [[ ! -f "${CREATE_SCRIPT}" ]]
 then
@@ -53,9 +64,16 @@ then
   exit 1
 fi
 
+if [[ ! -f "${SCRIPT_SCRIPT}" ]]
+then
+  echo "Error: Could not find script at ${SCRIPT_SCRIPT}"
+  exit 1
+fi
+
 # Make them executable if they aren't already
 chmod +x "${CREATE_SCRIPT}" 2>/dev/null
 chmod +x "${SAVE_SCRIPT}" 2>/dev/null
+chmod +x "${SCRIPT_SCRIPT}" 2>/dev/null
 
 # If no arguments provided, show usage
 if [[ $# -eq 0 ]]
@@ -68,6 +86,10 @@ if [[ "$1" = "save" ]]
 then
   # Pass all arguments to the save script
   "${SAVE_SCRIPT}" "$@"
+  exit $?
+elif [[ "$1" = "save-script" ]]
+then
+  "${SCRIPT_SCRIPT}" "$@"
   exit $?
 elif [[ "$1" = "help" ]] || [[ "$1" = "--help" ]] || [[ "$1" = "-h" ]]
 then

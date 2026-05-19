@@ -15,6 +15,7 @@ A wrapper around Foundry's `forge create` command that automatically saves deplo
   - Deployment timestamp
   - Contract path
 - Supports saving deployment information for existing deployments
+- Batch-saves artifacts from Foundry script run files (no blockchain calls needed)
 
 ## Installation
 
@@ -87,6 +88,43 @@ Optional arguments:
 - `--save-out PATH` - Directory to save deployment info (default: ./deployments)
 - `--file-prefix TEXT` - Prefix to prepend to the deployment file name
 
+### Saving Artifacts from a Foundry Script Run
+
+When you deploy multiple contracts with a Foundry script, the run artifact file
+(`broadcast/<Script>.s.sol/<chainId>/run-latest.json`) contains everything needed to
+save deployment records — no blockchain calls required:
+
+```bash
+forge-create save-script broadcast/Deploy.s.sol/80002/run-latest.json \
+  --save-out ./deployments \
+  --file-prefix v1 \
+  --comment "mainnet deploy"
+```
+
+This reads every CREATE/CREATE2 transaction from the file and saves one artifact per
+contract. CALL transactions are skipped automatically.
+
+Optional arguments:
+
+- `--save-out PATH` - Directory to save deployment artifacts (default: ./deployments)
+- `--file-prefix TEXT` - Prefix to prepend to each deployment filename
+- `--comment TEXT` - Comment added to every saved artifact
+
+**Contract path resolution:** For each deployed contract, `save-script` searches for a
+matching `.sol` file in the current directory. If found, `contractPath` is stored as
+`src/MyContract.sol:MyContract`; otherwise it falls back to just the contract name.
+
+Example output for a 5-contract deploy:
+
+```
+Storing deployment result to: deployments/80002/ChannelEngine/v1-2026-03-07T14-28-35.json
+Storing deployment result to: deployments/80002/EscrowWithdrawalEngine/v1-2026-03-07T14-28-35.json
+Storing deployment result to: deployments/80002/EscrowDepositEngine/v1-2026-03-07T14-28-35.json
+Storing deployment result to: deployments/80002/ECDSAValidator/v1-2026-03-07T14-28-35.json
+Storing deployment result to: deployments/80002/ChannelHub/v1-2026-03-07T14-28-35.json
+Saved 5 artifact(s), skipped 0 non-deployment transaction(s).
+```
+
 ## File Structure
 
 Deployment files are organized by chain ID and contract name:
@@ -143,10 +181,14 @@ brew install bats-core
 Run the tests:
 
 ```bash
-bats test/forge-create.bats
+bats test/forge-create.bats       # create/save tests (requires Anvil)
+bats test/forge-create-script.bats  # save-script tests (no Anvil needed)
 ```
 
-Anvil is started and stopped automatically by the test suite. Each test gets isolated chain state via `anvil_snapshot`/`anvil_revert`.
+The `forge-create.bats` suite starts and stops Anvil automatically. Each test gets
+isolated chain state via `anvil_snapshot`/`anvil_revert`.
+
+The `forge-create-script.bats` suite runs entirely offline against fixture JSON files.
 
 ## Contributing
 
