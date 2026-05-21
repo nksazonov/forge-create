@@ -9,6 +9,7 @@
       "arguments": null,
       "transaction": {
         "from": "0xf8bedb0aba14833e95f29e760487c3d34bc4ec64",
+        "to": "0x4e59b44847b379578588920cA78FbF26c0B4956C",
         "gas": "0x100000",
         "nonce": "0x0",
         "chainId": "0x7a69"
@@ -25,6 +26,7 @@
       "arguments": ["0x1111111111111111111111111111111111111111", "100"],
       "transaction": {
         "from": "0xf8bedb0aba14833e95f29e760487c3d34bc4ec64",
+        "to": "0x4e59b44847b379578588920cA78FbF26c0B4956C",
         "gas": "0x200000",
         "nonce": "0x1",
         "chainId": "0x7a69"
@@ -41,6 +43,7 @@
       "arguments": null,
       "transaction": {
         "from": "0xf8bedb0aba14833e95f29e760487c3d34bc4ec64",
+        "to": "0x4e59b44847b379578588920cA78FbF26c0B4956C",
         "gas": "0x300000",
         "nonce": "0x2",
         "chainId": "0x7a69"

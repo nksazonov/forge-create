@@ -137,7 +137,18 @@ for (( i=0; i<TX_COUNT; i++ )); do
     continue
   fi
 
-  TX_HASH=$(echo "$TX" | jq -r '.hash')
+  TX_HASH=$(echo "$TX" | jq -r '.hash // empty')
+  if [[ -z "$TX_HASH" ]]; then
+    (( SKIPPED++ ))
+    continue
+  fi
+
+  TX_TO=$(echo "$TX" | jq -r '.transaction.to // empty')
+  if [[ -z "$TX_TO" ]]; then
+    (( SKIPPED++ ))
+    continue
+  fi
+
   DEPLOYER=$(echo "$TX" | jq -r '.transaction.from')
   CONSTRUCTOR_ARGS_JSON=$(echo "$TX" | jq -c '.arguments // []')
 
