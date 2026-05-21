@@ -106,7 +106,7 @@ do
         echo "Error: --contract-path requires a value."
         exit 1
       fi
-      CONTRACT_PATH="$2"
+      CONTRACT_PATH="${2#./}"
       # Extract the fileContractName (just the filename.sol:ContractName part without the path)
       if [[ "${CONTRACT_PATH}" == *".sol:"* ]]
       then

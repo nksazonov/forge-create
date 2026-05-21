@@ -93,7 +93,7 @@ do
   # Extract contract path from argument containing .sol:
   if [[ "${arg}" == *".sol:"* ]]
   then
-    CONTRACT_PATH="${arg}"
+    CONTRACT_PATH="${arg#./}"
     # Use _ instead of : for filesystem compatibility
     FILE_CONTRACT_NAME=$(basename "${CONTRACT_PATH}" | tr ':' '_')
   fi

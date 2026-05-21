@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Version constant
-VERSION="v0.3.0"
+VERSION="v0.3.1"
 
 # Function to display usage information
 display_usage() {

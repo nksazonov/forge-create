@@ -127,6 +127,7 @@ RAW_FILE_NAME=$(date -u -r "${TIMESTAMP_S}" "+%Y-%m-%dT%H-%M-%S")
 TX_COUNT=$(jq '.transactions | length' "$RUN_FILE")
 SAVED=0
 SKIPPED=0
+INCOMPLETE_NAMES=()
 
 for (( i=0; i<TX_COUNT; i++ )); do
   TX=$(jq ".transactions[$i]" "$RUN_FILE")
@@ -137,7 +138,22 @@ for (( i=0; i<TX_COUNT; i++ )); do
     continue
   fi
 
-  TX_HASH=$(echo "$TX" | jq -r '.hash')
+  TX_HASH=$(echo "$TX" | jq -r '.hash // empty')
+  if [[ -z "$TX_HASH" ]]; then
+    (( SKIPPED++ ))
+    INCOMPLETE_NAMES+=("$(echo "$TX" | jq -r '.contractName // "unknown"')")
+    continue
+  fi
+
+  # Null tx.to means a direct CREATE (no factory), which we treat as incomplete.
+  # Valid factory-based deployments always have to = factory_address.
+  TX_TO=$(echo "$TX" | jq -r '.transaction.to // empty')
+  if [[ -z "$TX_TO" ]]; then
+    (( SKIPPED++ ))
+    INCOMPLETE_NAMES+=("$(echo "$TX" | jq -r '.contractName // "unknown"')")
+    continue
+  fi
+
   DEPLOYER=$(echo "$TX" | jq -r '.transaction.from')
   CONSTRUCTOR_ARGS_JSON=$(echo "$TX" | jq -c '.arguments // []')
 
@@ -192,4 +208,11 @@ for (( i=0; i<TX_COUNT; i++ )); do
   (( SAVED++ ))
 done
 
-echo "Saved ${SAVED} artifact(s), skipped ${SKIPPED} non-deployment transaction(s)."
+echo "Saved ${SAVED} artifact(s), skipped $(( SKIPPED - ${#INCOMPLETE_NAMES[@]} )) non-deployment transaction(s)."
+
+if [[ ${#INCOMPLETE_NAMES[@]} -gt 0 ]]; then
+  echo "Skipped ${#INCOMPLETE_NAMES[@]} incomplete deployment(s) (null hash or null tx.to):"
+  for name in "${INCOMPLETE_NAMES[@]}"; do
+    echo "  - ${name}"
+  done
+fi

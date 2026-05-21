@@ -37,7 +37,7 @@ brew install forge-create
 Use `forge-create` as a drop-in replacement for `forge create`:
 
 ```bash
-forge-create src/MyContract.sol_MyContract --rpc-url <your-rpc-url> --private-key <your-private-key>
+forge-create src/MyContract.sol:MyContract --rpc-url <your-rpc-url> --private-key <your-private-key>
 ```
 
 Additional options specific to `forge-create`:
@@ -101,8 +101,13 @@ forge-create save-script broadcast/Deploy.s.sol/80002/run-latest.json \
   --comment "mainnet deploy"
 ```
 
-This reads every CREATE/CREATE2 transaction from the file and saves one artifact per
-contract. CALL transactions are skipped automatically.
+This reads every transaction from the file and saves one artifact per deployed contract.
+The following transactions are skipped automatically:
+
+- **CALL transactions** (no `contractAddress`) — they call existing contracts, not deploy new ones
+- **Incomplete deployments** (null `hash` or null `transaction.to`) — e.g. simulated runs that were never broadcast
+
+Incomplete deployments are reported at the end with their contract names so you know what was missed.
 
 Optional arguments:
 
@@ -114,15 +119,16 @@ Optional arguments:
 matching `.sol` file in the current directory. If found, `contractPath` is stored as
 `src/MyContract.sol:MyContract`; otherwise it falls back to just the contract name.
 
-Example output for a 5-contract deploy:
+Example output for a 5-contract deploy where one contract was simulated but not broadcast:
 
 ```
 Storing deployment result to: deployments/80002/ChannelEngine/v1-2026-03-07T14-28-35.json
 Storing deployment result to: deployments/80002/EscrowWithdrawalEngine/v1-2026-03-07T14-28-35.json
 Storing deployment result to: deployments/80002/EscrowDepositEngine/v1-2026-03-07T14-28-35.json
 Storing deployment result to: deployments/80002/ECDSAValidator/v1-2026-03-07T14-28-35.json
-Storing deployment result to: deployments/80002/ChannelHub/v1-2026-03-07T14-28-35.json
-Saved 5 artifact(s), skipped 0 non-deployment transaction(s).
+Saved 4 artifact(s), skipped 1 non-deployment transaction(s).
+Skipped 1 incomplete deployment(s) (null hash or null tx.to):
+  - ChannelHub
 ```
 
 ## File Structure
