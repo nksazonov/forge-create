@@ -3,7 +3,7 @@
 FORGE_CREATE="$BATS_TEST_DIRNAME/../forge-create.sh"
 FIXTURE="$BATS_TEST_DIRNAME/fixtures/run-script-fixture.json"
 
-# Four transactions in the fixture (three deployments, one CALL):
+# Six transactions in the fixture (three deployments, two incomplete deployments, one CALL):
 #
 #   Counter.script  — Counter.sol EXISTS under fixtures/  → contractPath resolves to .sol path
 #                     directory: Counter.sol_Counter
@@ -13,6 +13,10 @@ FIXTURE="$BATS_TEST_DIRNAME/fixtures/run-script-fixture.json"
 #
 #   RemoteEngine.deploy — dot in name, RemoteEngine.sol NOT present → prefix "RemoteEngine" used
 #                         directory: RemoteEngine
+#
+#   SimulatedToken  — hash is null → skipped as incomplete, name reported
+#
+#   DirectDeploy    — no transaction.to (direct CREATE, no factory) → skipped as incomplete, name reported
 #
 #   CALL (initialize)   — contractAddress is null → skipped
 
@@ -283,6 +287,40 @@ save_script() {
   local count
   count=$(find "$BATS_TEST_TMPDIR" -name "v1-*-1.json" | wc -l | tr -d ' ')
   [ "$count" -eq 3 ]
+}
+
+# ---------------------------------------------------------------------------
+# Incomplete deployment skip (null hash / null tx.to)
+# ---------------------------------------------------------------------------
+
+@test "tx with null hash is skipped and not saved" {
+  run save_script "$FIXTURE" --save-out "$BATS_TEST_TMPDIR"
+
+  [ "$status" -eq 0 ]
+
+  local found
+  found=$(grep -rl "0x4444" "$BATS_TEST_TMPDIR" 2>/dev/null | wc -l | tr -d ' ')
+  [ "$found" -eq 0 ]
+}
+
+@test "tx with null transaction.to is skipped and not saved" {
+  run save_script "$FIXTURE" --save-out "$BATS_TEST_TMPDIR"
+
+  [ "$status" -eq 0 ]
+
+  local found
+  found=$(grep -rl "0x5555" "$BATS_TEST_TMPDIR" 2>/dev/null | wc -l | tr -d ' ')
+  [ "$found" -eq 0 ]
+}
+
+@test "incomplete deployment names appear in summary with count and names" {
+  run save_script "$FIXTURE" --save-out "$BATS_TEST_TMPDIR"
+
+  [ "$status" -eq 0 ]
+
+  [[ "$output" == *"Skipped 2 incomplete deployment(s) (null hash or null tx.to):"* ]]
+  [[ "$output" == *"  - SimulatedToken"* ]]
+  [[ "$output" == *"  - DirectDeploy"* ]]
 }
 
 # ---------------------------------------------------------------------------

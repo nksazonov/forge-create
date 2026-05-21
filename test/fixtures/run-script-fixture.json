@@ -52,6 +52,39 @@
       "isFixedGasLimit": false
     },
     {
+      "hash": null,
+      "transactionType": "CREATE2",
+      "contractName": "SimulatedToken",
+      "contractAddress": "0x4444444444444444444444444444444444444444",
+      "function": null,
+      "arguments": null,
+      "transaction": {
+        "from": "0xf8bedb0aba14833e95f29e760487c3d34bc4ec64",
+        "to": "0x4e59b44847b379578588920cA78FbF26c0B4956C",
+        "gas": "0x400000",
+        "nonce": "0x4",
+        "chainId": "0x7a69"
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0xeeee0000000000000000000000000000000000000000000000000000000000ee",
+      "transactionType": "CREATE",
+      "contractName": "DirectDeploy",
+      "contractAddress": "0x5555555555555555555555555555555555555555",
+      "function": null,
+      "arguments": null,
+      "transaction": {
+        "from": "0xf8bedb0aba14833e95f29e760487c3d34bc4ec64",
+        "gas": "0x500000",
+        "nonce": "0x5",
+        "chainId": "0x7a69"
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
       "hash": "0xcccc0000000000000000000000000000000000000000000000000000000000cc",
       "transactionType": "CALL",
       "contractName": null,

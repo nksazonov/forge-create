@@ -145,6 +145,8 @@ for (( i=0; i<TX_COUNT; i++ )); do
     continue
   fi
 
+  # Null tx.to means a direct CREATE (no factory), which we treat as incomplete.
+  # Valid factory-based deployments always have to = factory_address.
   TX_TO=$(echo "$TX" | jq -r '.transaction.to // empty')
   if [[ -z "$TX_TO" ]]; then
     (( SKIPPED++ ))
@@ -206,7 +208,7 @@ for (( i=0; i<TX_COUNT; i++ )); do
   (( SAVED++ ))
 done
 
-echo "Saved ${SAVED} artifact(s), skipped ${SKIPPED} non-deployment transaction(s)."
+echo "Saved ${SAVED} artifact(s), skipped $(( SKIPPED - ${#INCOMPLETE_NAMES[@]} )) non-deployment transaction(s)."
 
 if [[ ${#INCOMPLETE_NAMES[@]} -gt 0 ]]; then
   echo "Skipped ${#INCOMPLETE_NAMES[@]} incomplete deployment(s) (null hash or null tx.to):"
