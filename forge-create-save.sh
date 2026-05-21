@@ -110,7 +110,7 @@ do
       # Extract the fileContractName (just the filename.sol:ContractName part without the path)
       if [[ "${CONTRACT_PATH}" == *".sol:"* ]]
       then
-        FILE_CONTRACT_NAME=$(basename "${CONTRACT_PATH}")
+        FILE_CONTRACT_NAME=$(basename "${CONTRACT_PATH}" | tr ':' '_')
       else
         echo "Error: contract-path must be in the format 'path/to/Contract.sol:ContractName'."
         exit 1
@@ -247,7 +247,7 @@ fi
 # Convert timestamp to ISO8601 format (without ms) for filename
 # First convert to decimal if it's hex
 TIMESTAMP_DEC=$(cast to-dec "${TIMESTAMP}" 2>/dev/null)
-RAW_FILE_NAME=$(date -u -r "${TIMESTAMP_DEC}" "+%Y-%m-%dT%H:%M:%S")
+RAW_FILE_NAME=$(date -u -r "${TIMESTAMP_DEC}" "+%Y-%m-%dT%H-%M-%S")
 
 # Determine the chainId and convert to decimal
 CHAIN_ID=31337
